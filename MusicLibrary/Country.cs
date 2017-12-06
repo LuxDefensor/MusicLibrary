@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 
 namespace MusicLibrary
 {
-    public class Class1
+    public struct Country
     {
+        public int ID;
+        public string Name;
     }
 }
