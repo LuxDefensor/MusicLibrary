@@ -11,6 +11,7 @@ namespace MusicLibrary
     {
         private List<Country> countries;
         private List<Genre> genres;
+        private List<Artist> artists;
 
         public Library()
         {
@@ -46,6 +47,72 @@ namespace MusicLibrary
                 result.Add(new Country() { ID = (int)row[0], Name = row[1].ToString() });
             }
             return result;
+        }
+
+        #endregion
+
+        #region ManageData
+
+        public Genre AddGenre(int parentID, string genreName)
+        {
+            int newID = DataManager.AddGenre(parentID, genreName);
+            Genre newGenre = new Genre()
+            {
+                ID = newID,
+                ParentID = parentID,
+                Name = genreName
+            };
+            genres.Add(newGenre);
+            return newGenre;
+        }
+
+        public void DeleteGenre(int genreID)
+        {
+            DataManager.DeleteGenre(genreID);
+            genres.Remove(genres.First(g => g.ID == genreID));
+        }
+        #endregion
+
+        #region Public properties   
+        public List<Genre> Genres
+        {
+        get
+            {
+                return genres;
+            }
+        }
+
+        public List<Country> Countries
+        {
+            get
+            {
+                return countries;
+            }
+        }
+
+        public List<Artist> Artists
+        {
+        get
+            {
+                return artists;
+            }
+        }
+        #endregion
+
+        #region Access data
+        public Country GetCountry(int id)
+        {
+            return countries.FirstOrDefault(c => c.ID == id);
+        }
+
+        public Genre GetGenre(int id)
+        {
+            return genres.FirstOrDefault(g => g.ID == id);
+        }
+
+        public Artist GetArtist(int id)
+        {
+            return artists.FirstOrDefault(a => a.ID == id);
         }
 
         #endregion

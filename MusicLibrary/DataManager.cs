@@ -130,5 +130,145 @@ namespace MusicLibrary
             }
             return result;
         }
+
+        #region Stored procedures
+
+        #region Artist
+
+        public static int AddArtist(string name, int country, int startingYear, int id)
+        {
+            int result = -100;
+            SqlParameter par;
+            using (SqlConnection cn = new SqlConnection(cs))
+            {
+                cn.Open();
+                SqlCommand cmd = cn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "SP_ADD_Artist";
+                cmd.Parameters.AddWithValue("@ArtistName", name);
+                cmd.Parameters.AddWithValue("@Country", country);
+                cmd.Parameters.AddWithValue("@StartingYear", startingYear);
+                par = cmd.Parameters.AddWithValue("@ArtistID", result);
+                par.Direction = ParameterDirection.InputOutput;
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("SP_ADD_Artist(" + name + "," + country + "," + startingYear + ")", ex);
+                }
+            }
+            if (result > 0)
+                return result;
+            else
+                throw new Exception("SP_ADD_Artist: something went wrong");
+        }
+
+        public static void ChangeArtist(int id, string newName = "",
+            int newCountry = -1, int startingYear = -1)
+        {
+            SqlParameter par;
+            using (SqlConnection cn = new SqlConnection(cs))
+            {
+                cn.Open();
+                SqlCommand cmd = cn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "SP_Change_Artist";
+                cmd.Parameters.AddWithValue("@ID", id);
+                par = cmd.Parameters.Add("@NewName", SqlDbType.NVarChar, 255);
+                par.SqlValue = newName == "" ? null : newName;
+                par = cmd.Parameters.Add("@NewCountry", SqlDbType.Int);
+                if (newCountry < 0)
+                    par.SqlValue = null;
+                else
+                    par.SqlValue = newCountry;
+                par = cmd.Parameters.Add("@StartingYear", SqlDbType.Int);
+                if (startingYear < 0)
+                    par.SqlValue = null;
+                else
+                    par.SqlValue = startingYear;
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("SP_ADD_Artist(" + newName + "," + newCountry + "," + startingYear + ")", ex);
+                }
+            }
+        }
+
+        #endregion
+        
+        #region Genre
+
+        public static int AddGenre(int parentID, string genreName)
+        {
+            int result = -100;
+            SqlParameter par;
+            using (SqlConnection cn = new SqlConnection(cs))
+            {
+                cn.Open();
+                SqlCommand cmd = cn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "SP_ADD_Genre";
+                cmd.Parameters.AddWithValue("@ID_Parent", parentID);
+                cmd.Parameters.AddWithValue("@GenreName", genreName);
+                par = cmd.Parameters.AddWithValue("@ID_Genre", result);
+                par.Direction = ParameterDirection.InputOutput;
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("SP_ADD_Genre(" + parentID + "," + genreName + ")", ex);
+                }
+            }
+            if (result > 0)
+                return result;
+            else if (result == -1)
+                throw new Exception("SP_ADD_Genre: No such parent genre " + parentID);
+            else if (result == -2)
+                throw new Exception("SP_ADD_Genre: " + genreName + " genre alredy exists");
+            else
+                throw new Exception("SP_ADD_Genre: something went wrong");
+        }
+
+        public static void DeleteGenre(int genreID)
+        {
+            int result = -100;
+            SqlParameter par;
+            using (SqlConnection cn = new SqlConnection(cs))
+            {
+                cn.Open();
+                SqlCommand cmd = cn.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = "SP_DELETE_Genre";
+                cmd.Parameters.AddWithValue("@ID_Genre", genreID);
+                par = cmd.Parameters.AddWithValue("@Result", result);
+                par.Direction = ParameterDirection.InputOutput;
+                try
+                {
+                    cmd.ExecuteNonQuery();
+                }
+                catch (Exception ex)
+                {
+                    throw new Exception("SP_DELETE_Genre(" + genreID + ")", ex);
+                }
+            }
+            if (result == -1)
+                throw new Exception("SP_DELETE_Genre: No such genre " + genreID);
+            else if (result == -2)
+                throw new Exception("SP_DELETE_Genre: " + genreID + " still has children." +
+                    "It cannot be deleted before them");
+            else if (result < 0)
+                throw new Exception("SP_DELETE_Genre: something went wrong");
+        }
+
+        #endregion
+
+        #endregion
     }
 }
